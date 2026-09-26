@@ -1,0 +1,59 @@
+ERREUR 409 "Pseudo ou email deja utilise" - POURQUOI ET SOLUTION
+==================================================================
+
+SYMPTOME
+--------
+  curl -X POST http://localhost:3001/api/auth/register \
+    -H "Content-Type: application/json" \
+    -d '{"username":"Test_01","email":"test@mail.com","password":"secret123"}'
+
+  Reponse : {"error":"Pseudo ou email deja utilise."}
+  Et ta BDD "Launcher" semble vide.
+
+POURQUOI (2 choses a comprendre)
+--------------------------------
+1. Le 409 est NORMAL, ce n'est pas un bug.
+   L'API fait : SELECT id FROM users WHERE username = ? OR email = ?
+   Si UNE ligne existe deja -> 409. Ca veut dire que le compte Test_01
+   a DEJA ete cree (tres probablement par ton tout premier appel register,
+   qui a reussi). Rejouer le meme register redonne toujours 409.
+
+2. Tu regardes la MAUVAISE base.
+   L'API n'utilise PAS une base appelee "Launcher".
+   Elle utilise la base definie dans le .env RACINE :
+     DB_NAME=launcher_minecraft   (valeur par defaut du projet)
+   Donc : ta base "Launcher" est vide, c'est normal.
+   Les donnees sont dans : launcher_minecraft -> table users.
+
+SOLUTION
+--------
+Etape 1 - Verifier quelle base l'API utilise :
+  cat .env
+  docker compose exec db mysql -uroot -p"$DB_PASSWORD" -e "SHOW DATABASES;"
+
+Etape 2 - Voir les comptes dans la BONNE base :
+  docker compose exec db mysql -uroot -p"$DB_PASSWORD" -e "USE launcher_minecraft; SELECT id, username, email, created_at FROM users;"
+  # Tu dois y voir Test_01. Si oui : tout fonctionne, rien a reparer.
+
+Etape 3 - Tester la CONNEXION (pas l'inscription) :
+  curl -X POST http://localhost:3001/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"identifier":"Test_01","password":"secret123"}'
+  # Attendu : {"token":"...","user":{...}}
+  # C'est ce token que le launcher utilisera.
+
+CAS PARTICULIER : 409 des le TOUT PREMIER essai ?
+-------------------------------------------------
+Ca veut dire que le volume Docker db_data contient deja des donnees
+d'un lancement precedent (MySQL garde tout entre les restarts).
+Verifie :
+  docker compose exec db mysql -uroot -p"$DB_PASSWORD" -e "USE launcher_minecraft; SELECT * FROM users;"
+Si tu veux repartir de zero (ATTENTION : efface TOUS les comptes) :
+  docker compose down -v
+  docker compose up -d --build
+
+RESUME
+------
+- 409 = le compte existe deja -> utilise /login, pas /register.
+- Cherche les donnees dans launcher_minecraft.users, pas dans "Launcher".
+- Si /login renvoie un token, ton API + BDD sont OK et le launcher peut se connecter.

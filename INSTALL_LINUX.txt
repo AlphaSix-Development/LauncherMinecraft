@@ -1,11 +1,17 @@
-INSTALLATION API + BDD SUR LINUX (Ubuntu / Debian)
-Launcher Minecraft - API Express + MySQL (meme serveur via Docker)
+INSTALLATION API SUR LINUX (Ubuntu / Debian)
+Launcher Minecraft - API Express + MySQL de TON serveur (visible dans phpMyAdmin)
 Port API : 3001
-====================================================================
+====================================================================================
+
+PRINCIPE
+--------
+- L'API tourne dans Docker, mais ecrit dans TON MySQL (base Launcher, gerable via phpMyAdmin).
+- Le MySQL Docker n'est plus utilise par defaut (secours possible, voir section 9).
+- Fichiers utiles : MYSQL_EXTERNE.txt (branchement MySQL en detail),
+  DEPANNAGE_409.txt (erreur "deja utilise"), server/schema-externe.sql (table users).
 
 1. PREREQUIS SUR TON LINUX
 --------------------------
-Docker + Compose deja installes. Verifie :
   docker --version
   docker compose version
 
@@ -14,77 +20,88 @@ Si manquant :
   sudo systemctl enable --now docker
   sudo usermod -aG docker $USER  (puis reconnecte-toi)
 
-2. RECUPERER LE PROJET SUR LE LINUX
------------------------------------
+Il faut aussi : MySQL installe sur le serveur + acces phpMyAdmin.
+
+2. RECUPERER LE PROJET
+----------------------
   git clone https://github.com/AlphaSix-Development/LauncherMinecraft.git
   cd LauncherMinecraft
-  ls
-  # tu dois voir : docker-compose.yml, .env.example, server/, launcher/
 
-  Mise a jour plus tard :
-  git pull
+  Mises a jour plus tard : git pull
 
-3. CONFIGURER LE .ENV PROD (a la racine)
-----------------------------------------
+3. PREPARER TON MYSQL (via phpMyAdmin)
+--------------------------------------
+a) Selectionne ta base (ex : Launcher) -> onglet SQL -> colle le contenu
+   de server/schema-externe.sql -> Executer. La table users apparait.
+
+b) Cree un user dedie (onglet SQL, sans selectionner de base) :
+     CREATE USER IF NOT EXISTS 'launcher_api'@'%' IDENTIFIED BY 'MOT_DE_PASSE_FORT';
+     GRANT ALL PRIVILEGES ON Launcher.* TO 'launcher_api'@'%';
+     FLUSH PRIVILEGES;
+   (Remplace MOT_DE_PASSE_FORT et Launcher si ta base a un autre nom.)
+
+c) Autorise Docker a joindre MySQL (en SSH sur le Linux) :
+     sudo ss -tlnp | grep 3306
+     grep -r bind-address /etc/mysql/ 2>/dev/null
+   Si bind-address = 127.0.0.1, Docker sera refuse. Corrige :
+     sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
+     # mets : bind-address = 0.0.0.0
+     sudo systemctl restart mysql
+   Si ufw actif :
+     sudo ufw allow from 172.16.0.0/12 to any port 3306
+
+4. CONFIGURER LE .ENV (a la racine du projet)
+---------------------------------------------
   cp .env.example .env
   nano .env
 
-Contenu a mettre (exemple) :
-  DB_PASSWORD=TonMotDePasseFort123!_change_moi
-  DB_NAME=launcher_minecraft
-  JWT_SECRET=colle_ici_48_caracteres_aleatoires
+  DB_HOST=host.docker.internal  (ne pas changer : c'est l'hote vu depuis Docker)
+  DB_PORT=3306
+  DB_USER=launcher_api
+  DB_PASSWORD=MOT_DE_PASSE_FORT   (celui de l'etape 3.b)
+  DB_NAME=Launcher                (nom exact de ta base phpMyAdmin)
+  JWT_SECRET=<colle ici : openssl rand -base64 48>
 
-Generer un JWT_SECRET fort :
-  openssl rand -base64 48
-
-IMPORTANT :
-- C'est le .env RACINE qui compte (lu par docker-compose.yml).
-- Ne touche pas a DB_HOST=db (c'est le nom interne Docker, api -> db).
-- Ne mets pas d'espaces autour du =.
-
-4. LANCER API + BDD
--------------------
+5. LANCER L'API
+---------------
   docker compose up -d --build
   docker compose ps
   docker compose logs -f api
-  # Attends ces lignes :
+  # Attends :
   #   [DB] MySQL connecte + table users OK
   #   [API] http://localhost:3001 -> /api/health
   # CTRL+C pour quitter les logs (ca continue en fond).
 
-5. VERIFIER QUE CA REPOND (sur le Linux)
-----------------------------------------
+6. VERIFIER (sur le Linux)
+--------------------------
   curl http://localhost:3001/api/health
   # attendu : {"ok":true,"time":"..."}
 
-  # Test inscription :
   curl -X POST http://localhost:3001/api/auth/register \
     -H "Content-Type: application/json" \
     -d '{"username":"Test_01","email":"test@mail.com","password":"secret123"}'
   # attendu : {"token":"...","user":{...}}
+  # Puis dans phpMyAdmin : base Launcher -> users -> Parcourir : tu dois voir Test_01.
 
-  # Test connexion :
   curl -X POST http://localhost:3001/api/auth/login \
     -H "Content-Type: application/json" \
     -d '{"identifier":"Test_01","password":"secret123"}'
 
-  # Test token :
-  TOKEN=colle_ton_token_ici
-  curl http://localhost:3001/api/auth/me -H "Authorization: Bearer $TOKEN"
+  Si register dit "deja utilise" (409) : c'est que le compte existe deja,
+  utilise /login. Voir DEPANNAGE_409.txt.
 
-6. OUVRIR LE PORT POUR LE LAUNCHER
+7. OUVRIR LE PORT POUR LE LAUNCHER
 ----------------------------------
   ss -tlnp | grep 3001
   sudo ufw allow 3001/tcp
   sudo ufw status
 
-  Depuis ton PC Windows (PowerShell ou navigateur) :
+  Depuis ton PC Windows :
   curl http://IP_SERVEUR:3001/api/health
-  # remplace IP_SERVEUR par l'IP publique du VPS, ex : http://51.91.12.34:3001/api/health
+  # ex : http://51.91.12.34:3001/api/health
+  Si firewall cloud (OVH/Hetzner...) : ouvre aussi le port 3001 dans le panel.
 
-  Si OVH / Hetzner / firewall cloud : ouvre aussi le port 3001 dans le panel.
-
-7. POINTER LE LAUNCHER VERS LE SERVEUR
+8. POINTER LE LAUNCHER VERS LE SERVEUR
 --------------------------------------
 Sur ton PC, edite launcher/config.json :
   {
@@ -92,45 +109,32 @@ Sur ton PC, edite launcher/config.json :
     "serverName": "Mon Serveur"
   }
 
-Puis rebuild l'exe :
   cd launcher
   npm install
   npm start       (test dev)
-  npm run dist    (genere dist/MonLauncher-Setup-0.1.0.exe)
+  npm run dist    (genere dist/MonLauncher-Setup-*.exe)
 
-8. MAINTENANCE
---------------
-  docker compose logs -f            # voir logs live
-  docker compose logs -f api        # logs API seule
-  docker compose logs -f db         # logs MySQL
+9. SECOURS : REVENIR AU MYSQL DOCKER
+------------------------------------
+Si ton MySQL pose probleme, tu peux reutiliser celui de Docker :
+  nano .env   # mets DB_HOST=db
+  docker compose --profile mysql-docker up -d --build
+  # La base sera launcher_minecraft (change DB_NAME en consequence).
+
+10. MAINTENANCE
+---------------
+  docker compose logs -f            # logs live
+  docker compose logs -f api        # API seule
+  docker compose up -d --build      # rebuild apres git pull
   docker compose down               # stop
-  docker compose up -d              # restart
-  docker compose up -d --build      # rebuild apres modif server/
-  docker volume ls                  # db_data = donnees MySQL persistantes
 
-  Mettre a jour apres modif du code :
-  Sur Linux : git pull, puis docker compose up -d --build
+11. DEPANNAGE RAPIDE
+--------------------
+- "Access denied for user" -> mauvais password ou user sans '%' (revois 3.b).
+- "ECONNREFUSED / timeout" -> bind-address ou firewall (revois 3.c).
+- "Unknown database" -> faute dans DB_NAME (casse exacte).
+- "Table users doesn't exist" -> etape 3.a non faite.
+- Detail : voir MYSQL_EXTERNE.txt et DEPANNAGE_409.txt.
 
-9. DEPANNAGE
-------------
-- API boucle "[DB] tentative ... retry" :
-  -> .env faux / db pas healthy. Verifie : docker compose logs db, docker compose ps
-- "JWT_SECRET trop court" dans les logs :
-  -> regenere un secret 48 chars dans .env puis up -d
-- curl OK en local mais pas depuis PC :
-  -> firewall ufw / firewall cloud / mauvaise IP. Teste : telnet IP 3001
-- "Pseudo ou email deja utilise" (409) : normal, compte deja cree. Teste login.
-- Port 3001 deja pris (ss -tlnp | grep 3001 montre un autre service) :
-  -> change le mapping dans docker-compose.yml, ex "3002:3001", puis apiUrl http://IP:3002
-- Reset complet BDD (ATTENTION efface tout) :
-  docker compose down -v
-  docker compose up -d --build
-
-10. SECURITE (mode IP:port = test, pas prod publique longue duree)
-------------------------------------------------------------------
-- DB_PASSWORD fort + JWT_SECRET 48 chars minimum.
-- Le port 3306 MySQL ne doit JAMAIS etre expose (reste interne, c'est deja le cas).
-- Pour du public durable : passe en domaine + HTTPS (Nginx/Caddy reverse proxy).
-- Sauvegarde : docker exec ... mysqldump ou snapshot volume db_data.
-
-FIN - Si /api/health repond depuis ton PC sur le port 3001, ton launcher peut se connecter.
+FIN - Si /api/health repond sur le port 3001 ET que phpMyAdmin montre
+les users, tout est OK : ton launcher peut se connecter.

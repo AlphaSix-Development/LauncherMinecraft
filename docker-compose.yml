@@ -1,11 +1,13 @@
-# API + BDD sur le MEME serveur (recommandé prod)
+# API branchee sur TON MySQL (meme serveur, gerable via phpMyAdmin).
+# Le MySQL Docker (service db) ne demarre qu'avec : docker compose --profile mysql-docker up -d
 services:
   db:
+    profiles: ["mysql-docker"]
     image: mysql:8.4
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-rootpassword_change_me}
-      MYSQL_DATABASE: ${DB_NAME:-launcher_minecraft}
+      MYSQL_DATABASE: ${DB_NAME:-Launcher}
     volumes:
       - db_data:/var/lib/mysql
       - ./server/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
@@ -18,16 +20,17 @@ services:
   api:
     build: ./server
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
+    # Permet au conteneur de joindre le MySQL installe sur l'hote
+    # via le nom host.docker.internal (resolu vers l'IP passerelle Docker)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       PORT: 3001
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_USER: root
+      DB_HOST: ${DB_HOST:-host.docker.internal}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USER: ${DB_USER:-launcher_api}
       DB_PASSWORD: ${DB_PASSWORD:-rootpassword_change_me}
-      DB_NAME: ${DB_NAME:-launcher_minecraft}
+      DB_NAME: ${DB_NAME:-Launcher}
       JWT_SECRET: ${JWT_SECRET:-change_moi_en_prod_min_32_caracteres_aleatoires}
       JWT_EXPIRES_IN: 7d
       CORS_ORIGIN: "*"
