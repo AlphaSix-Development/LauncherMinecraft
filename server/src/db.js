@@ -35,8 +35,38 @@ async function initDb(retries = 15) {
       } catch (err) {
         if (err.errno !== 1060) throw err;
       }
+      // Serveurs de jeu (créés depuis le launcher admin) : 1 serveur -> 0,N mods.
+      // modpack_version = "numéro du modpack", bumpé à chaque changement de mods.
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS servers (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(64) NOT NULL,
+          ip VARCHAR(255) NOT NULL,
+          port INT NOT NULL DEFAULT 25565,
+          mc_version VARCHAR(16) NOT NULL,
+          loader ENUM('vanilla','forge') NOT NULL DEFAULT 'vanilla',
+          loader_version VARCHAR(32) NULL,
+          modpack_version INT NOT NULL DEFAULT 1,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_name (name)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      await conn.query(`
+        CREATE TABLE IF NOT EXISTS mods (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          server_id INT NOT NULL,
+          name VARCHAR(128) NOT NULL,
+          filename VARCHAR(255) NOT NULL,
+          sha1 CHAR(40) NOT NULL,
+          size BIGINT NOT NULL DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_server (server_id),
+          INDEX idx_sha1 (sha1),
+          CONSTRAINT fk_mods_server FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
       conn.release();
-      console.log('[DB] MySQL connecté + table users OK');
+      console.log('[DB] MySQL connecté + tables users/servers/mods OK');
       return;
     } catch (err) {
       console.log(`[DB] tentative ${i}/${retries} échouée (${err.code || err.message}), retry dans 3s...`);

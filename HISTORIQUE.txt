@@ -1,0 +1,110 @@
+HISTORIQUE DU PROJET - TOUTES LES ETAPES + COMMANDES
+======================================================
+Repo : https://github.com/AlphaSix-Development/LauncherMinecraft.git
+API prod : http://89.168.51.174:3001 (port 3001) | BDD : MySQL "Launcher" (meme serveur)
+
+------------------------------------------------------
+ETAPE 1 - BASE : launcher Electron + API auth + Docker
+------------------------------------------------------
+Fait : app Electron (connexion / inscription / ecran connecte),
+API Express + MySQL + JWT + bcrypt, docker-compose (api + MySQL docker).
+Fichiers : launcher/, server/src/*, docker-compose.yml, README.md, INSTALL_LINUX.txt.
+
+Deployer (Linux) :
+  git clone https://github.com/AlphaSix-Development/LauncherMinecraft.git
+  cd LauncherMinecraft
+  cp .env.example .env && nano .env
+  docker compose up -d --build
+  curl http://localhost:3001/api/health
+
+Exe (PC Windows) :
+  cd launcher && npm install && npm run dist
+  # -> dist/MonLauncher Setup 0.1.0.exe
+
+------------------------------------------------------
+ETAPE 2 - API BRANCHEE SUR TON MYSQL (phpMyAdmin)
+------------------------------------------------------
+Fait : l'API ecrit dans TA base "Launcher" au lieu du MySQL Docker
+(DB_HOST=host.docker.internal, MySQL Docker en option --profile mysql-docker).
+Fichiers : docker-compose.yml, .env.example, server/schema-externe.sql.
+
+Commandes (Linux) :
+  # creer table + user dans phpMyAdmin (onglet SQL), puis :
+  grep -r bind-address /etc/mysql/   # si 127.0.0.1 -> mettre 0.0.0.0 + restart mysql
+  sudo ufw allow from 172.16.0.0/12 to any port 3306
+  sudo ufw allow 3001/tcp
+
+------------------------------------------------------
+ETAPE 3 - DIAGNOSTIC 409 + PORT 3001 PARTOUT
+------------------------------------------------------
+Fait : tout passe en 3001 (compose, API, launcher, docs).
+Le 409 "deja utilise" = compte existant -> utiliser /login.
+Test inscription / connexion :
+  curl -X POST http://localhost:3001/api/auth/register -H "Content-Type: application/json" -d '{"username":"Test_01","email":"test@mail.com","password":"secret123"}'
+  curl -X POST http://localhost:3001/api/auth/login -H "Content-Type: application/json" -d '{"identifier":"Test_01","password":"secret123"}'
+
+------------------------------------------------------
+ETAPE 4 - TAG ADMIN (owner BDD uniquement)
+------------------------------------------------------
+Fait : colonne users.role (migration auto au boot), role dans JWT + /me,
+middleware requireAdmin (relit la BDD a chaque appel), badge/admin auto.
+Aucune route n'accepte role en entree.
+SQL (phpMyAdmin, base Launcher) :
+  ALTER TABLE users ADD COLUMN role ENUM('user','admin') NOT NULL DEFAULT 'user';
+  UPDATE users SET role = 'admin' WHERE username = 'AlphaSix';
+  SELECT id, username, email, role FROM users;
+
+------------------------------------------------------
+ETAPE 5 - PANEL WEB (CREE PUIS SUPPRIME)
+------------------------------------------------------
+Fait puis retire sur ta demande : routes /api/panel/*, pages /panel/,
+table panel_users, script set-panel-password.js, PANEL.txt.
+Si la table orpheline existe encore :
+  DROP TABLE IF EXISTS panel_users;
+
+------------------------------------------------------
+ETAPE 6 - SERVEURS + MODS, ADMIN DANS LE LOGICIEL (P0+P1, en cours)
+------------------------------------------------------
+Fait : tables servers + mods (+ migration auto), volume mods_data,
+routes publiques GET /api/servers et GET /api/servers/:id,
+CRUD admin POST/PUT/DELETE /api/admin/servers (tag requis).
+Launcher : bouton Admin dans le menu gauche + sous-menu
+(Mon compte / Tableau de bord / Joueurs), visible si tag admin,
+refresh auto toutes les 30s (tag pris/retire sans deconnexion).
+Fichiers : server/src/db.js, routes/servers.js (nouveau), routes/admin.js,
+docker-compose.yml, schema-complet.sql, MCD.txt, TABLES_BDD.txt.
+
+Tester (apres git pull + rebuild Linux) :
+  # TOKEN = token d'un compte tag admin (login jeu)
+  curl -X POST http://localhost:3001/api/admin/servers -H "Content-Type: application/json" -H "Authorization: Bearer TOKEN" -d '{"name":"Serveur 1","ip":"play.exemple.fr","port":25565,"mc_version":"1.20.1","loader":"forge","loader_version":"47.2.0"}'
+  curl http://localhost:3001/api/servers
+
+------------------------------------------------------
+COMMANDES GENERALES (Linux)
+------------------------------------------------------
+  cd ~/LauncherMinecraft
+  git pull
+  rm -f MYSQL_EXTERNE.txt DEPANNAGE_409.txt   # vieux tutos supprimes du repo
+  docker compose up -d --build
+  docker compose ps
+  docker compose logs -f api                  # CTRL+C pour quitter
+  docker compose logs api | grep -i -E "migration|erreur|panel" | tail -5
+
+------------------------------------------------------
+COMMANDES GENERALES (PC Windows, dossier projet)
+------------------------------------------------------
+  cd E:\LauncherMinecraft\launcher
+  npm install
+  npm start        # test dev
+  npm run dist     # exe -> launcher\dist\MonLauncher Setup 0.1.0.exe
+
+------------------------------------------------------
+PROCHAINES ETAPES PREVUES (P2 -> P5)
+------------------------------------------------------
+  P2 : upload mods (zip/jar) + serving + bump modpack_version.
+  P3 : UI admin launcher (creer serveur + drag-drop mods).
+  P4 : UI joueur (cartes serveurs + JOUER crack + synchro mods + popup switch).
+  P5 : detection Java, docs SERVERS.txt, exe final.
+
+VOIR AUSSI : INSTALL_LINUX.txt (install), TABLES_BDD.txt (BDD),
+MCD.txt (modele), README.md (endpoints).

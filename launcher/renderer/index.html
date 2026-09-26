@@ -13,6 +13,14 @@
     <aside class="sidebar">
       <div class="logo">⛏️ <span id="serverName">Mon Serveur</span></div>
       <div class="status"><span id="dot" class="dot offline"></span><span id="apiStatus">API : …</span></div>
+      <div id="admin-block" class="side-admin hidden">
+        <button id="btn-admin-menu" class="admin-toggle">👑 Admin <span id="admin-chevron" class="chevron">▾</span></button>
+        <div id="admin-submenu" class="submenu hidden">
+          <a href="#" data-view="view-connected">👤 Mon compte</a>
+          <a href="#" data-view="view-admin-dashboard">📊 Tableau de bord</a>
+          <a href="#" data-view="view-admin-users">👥 Joueurs</a>
+        </div>
+      </div>
       <div class="side-footer">v0.1.0 — pas de jeu pour l'instant</div>
     </aside>
 
@@ -40,11 +48,21 @@
         <p class="switch">Déjà inscrit ? <a href="#" id="go-login">Se connecter</a></p>
       </section>
 
-      <!-- ADMIN (visible auto si le compte jeu a le tag admin en BDD, sans 2e login) -->
-      <section id="view-admin" class="card wide hidden">
+      <!-- ADMIN : ouvert via le sous-menu de gauche, jamais en direct -->
+      <section id="view-admin-dashboard" class="card hidden">
         <div class="connected-badge">✅ Connecté — Admin</div>
         <h1>Vous êtes bien connecté</h1>
-        <p class="sub">Bienvenue, <b id="admin-hello">admin</b> ! (<span id="admin-total">—</span> joueurs inscrits)</p>
+        <p class="sub">Bienvenue, <b id="admin-hello">admin</b> !</p>
+        <div class="stats">
+          <div class="stat"><span class="stat-num" id="admin-total">—</span><span class="stat-label">Joueurs inscrits</span></div>
+          <div class="stat"><span class="stat-num" id="stat-last">—</span><span class="stat-label">Dernier inscrit</span></div>
+          <div class="stat"><span class="stat-num" id="stat-date">—</span><span class="stat-label">Date d'inscription</span></div>
+        </div>
+      </section>
+
+      <section id="view-admin-users" class="card wide hidden">
+        <h1>👥 Joueurs</h1>
+        <p class="sub">Liste des comptes inscrits.</p>
         <div class="table-wrap">
           <table>
             <thead><tr><th>#</th><th>Pseudo</th><th>Email</th><th>Inscrit le</th></tr></thead>

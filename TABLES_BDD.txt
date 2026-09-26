@@ -13,11 +13,12 @@ Base concernee : celle de ton .env (DB_NAME, ex : Launcher).
    - created_at : date de creation
    Remplie automatiquement quand un joueur s'inscrit depuis le launcher.
 
-2. CREER / MAJ LA TABLE (une fois)
+2. CREER / MAJ LES TABLES (une fois)
 ----------------------------------
 Dans phpMyAdmin : clique sur ta base (ex : Launcher) -> onglet SQL ->
 ouvre server/schema-complet.sql, colle tout -> Executer.
-(L'API cree/migre aussi toute seule au boot : colonne role ajoutee auto.)
+(L'API cree/migre aussi toute seule au boot : colonne role + tables
+servers/mods ajoutees auto.)
 
 3. VOIR LES COMPTES
 -------------------
@@ -44,7 +45,18 @@ en bcrypt, puis coller le hash. Genere le hash :
     UPDATE users SET password_hash = '$2b$12$...colle_le_hash_ici...' WHERE username = 'Pseudo';
   Le joueur se reconnecte avec NouveauMotDePasse.
 
-7. NETTOYAGE (ancien panel web supprime)
+7. TABLES SERVEURS + MODS (P0/P1 : gerees depuis le launcher admin)
+-----------------------------------------------------------------
+   servers : liste des serveurs de jeu (nom, ip, port, mc_version,
+   loader vanilla/forge + version, modpack_version = n° du modpack).
+     SELECT id, name, ip, port, mc_version, loader, loader_version, modpack_version FROM servers;
+   mods : tous les mods de tous les serveurs (server_id = le serveur).
+     SELECT id, server_id, name, filename, sha1, size FROM mods WHERE server_id = 1;
+   Creation/suppression : via le launcher (compte tag admin) ou l'API
+   (POST/PUT/DELETE /api/admin/servers). Supprimer un serveur supprime
+   ses lignes mods en cascade (FK). Les FICHIERS mods arrivent en P2.
+
+8. NETTOYAGE (ancien panel web supprime)
 ----------------------------------------
    La table panel_users ne sert plus (API l'ignore). Pour l'effacer :
      DROP TABLE IF EXISTS panel_users;

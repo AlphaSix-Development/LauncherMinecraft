@@ -2,8 +2,8 @@ MCD - LAUNCHER MINECRAFT (BDD MySQL)
 ===================================
 Base : celle du .env (DB_NAME, ex : Launcher). Gerable via phpMyAdmin.
 
-ENTITE UNIQUE (pas d'association)
----------------------------------
+ENTITES + ASSOCIATION
+----------------------
   JOUEUR  (table users)
   - id            : INT, PK, auto
   - username      : VARCHAR(16), UNIQUE
@@ -12,10 +12,23 @@ ENTITE UNIQUE (pas d'association)
   - role          : ENUM('user','admin'), defaut 'user'  <- TAG ADMIN
   - created_at    : TIMESTAMP
 
+  SERVEUR (table servers)  --1--------< contient >--------0,N--  MOD (table mods)
+  - id              : INT, PK, auto                        - id        : INT, PK, auto
+  - name            : VARCHAR(64)                          - server_id : INT, FK -> servers
+  - ip              : VARCHAR(255)                           (ON DELETE CASCADE)
+  - port            : INT, defaut 25565                    - name      : VARCHAR(128)
+  - mc_version      : VARCHAR(16)                          - filename  : VARCHAR(255)
+  - loader          : ENUM('vanilla','forge')              - sha1      : CHAR(40)
+  - loader_version  : VARCHAR(32), NULL                    - size      : BIGINT
+  - modpack_version : INT, defaut 1 (n° du modpack)        - created_at: TIMESTAMP
+  - created_at      : TIMESTAMP
+
 MLD (Modele Logique)
 --------------------
   users (id#, username*, email*, password_hash, role, created_at)
-  (# = cle primaire, * = UNIQUE ; pas de cle etrangere)
+  servers (id#, name, ip, port, mc_version, loader, loader_version, modpack_version, created_at)
+  mods (id#, server_id**, name, filename, sha1, size, created_at)
+  (# = cle primaire, * = UNIQUE, ** = cle etrangere -> servers, suppression en cascade)
 
 TAG ADMIN (seul le owner BDD le donne, en SQL direct)
 -----------------------------------------------------

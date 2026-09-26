@@ -3,9 +3,14 @@ let session = null; // { token, user }
 
 const $ = (id) => document.getElementById(id);
 
+const VIEWS = ['view-login', 'view-register', 'view-connected', 'view-admin-dashboard', 'view-admin-users'];
+
 function show(view) {
-  ['view-login', 'view-register', 'view-connected', 'view-admin'].forEach((v) => $(v).classList.add('hidden'));
+  VIEWS.forEach((v) => $(v).classList.add('hidden'));
   $(view).classList.remove('hidden');
+  document.querySelectorAll('#admin-submenu a').forEach((a) => {
+    a.classList.toggle('active', a.dataset.view === view);
+  });
 }
 
 // Échappe le HTML (pseudos/emails BDD affichés dans le tableau admin).
@@ -37,7 +42,7 @@ async function api(path, { method = 'GET', body, token } = {}) {
   return data;
 }
 
-function renderConnected() {
+function fillConnected() {
   $('hello').textContent = `Bienvenue, ${session.user.username} !`;
   $('connected-sub').textContent = 'Tu es bien connecté. Le lancement du jeu arrivera à la prochaine étape.';
   $('user-pseudo').textContent = session.user.username;
@@ -45,44 +50,69 @@ function renderConnected() {
   $('user-created').textContent = session.user.created_at
     ? new Date(session.user.created_at).toLocaleString('fr-FR')
     : '—';
-  show('view-connected');
-  refreshAdminSection();
 }
 
-// Admin auto : visible si le compte jeu a le tag admin en BDD, sans 2e login.
-// Le tag est relu via /api/admin/users (qui re-vérifie en BDD) : si le owner
-// le retire, la section se masque toute seule, pas besoin de se déconnecter.
-async function refreshAdminSection() {
-  if (!session || session.user.role !== 'admin') {
-    $('view-admin').classList.add('hidden');
+function renderConnected() {
+  fillConnected();
+  show('view-connected');
+  updateAdminUI();
+}
+
+// Bouton Admin du menu gauche : visible uniquement avec le tag admin en BDD.
+// Le clic ouvre le SOUS-MENU (jamais le dashboard en direct).
+function updateAdminUI() {
+  const isAdmin = !!session && session.user.role === 'admin';
+  $('admin-block').classList.toggle('hidden', !isAdmin);
+  if (!isAdmin) {
+    $('admin-submenu').classList.add('hidden');
+    $('admin-chevron').classList.remove('open');
+    if (!$('view-admin-dashboard').classList.contains('hidden') ||
+        !$('view-admin-users').classList.contains('hidden')) {
+      show('view-connected');
+    }
     return;
   }
+  refreshAdminData();
+}
+
+// Remplit dashboard + tableau (sans changer de vue).
+async function refreshAdminData() {
+  if (!session || session.user.role !== 'admin') return;
   try {
     $('admin-load-error').textContent = '';
     const { users } = await api('/api/admin/users', { token: session.token });
     $('admin-hello').textContent = session.user.username;
     $('admin-total').textContent = users.length;
+    if (users.length > 0) {
+      $('stat-last').textContent = users[0].username;
+      $('stat-last').title = users[0].username;
+      $('stat-date').textContent = fmtDate(users[0].created_at);
+      $('stat-date').title = fmtDate(users[0].created_at);
+    } else {
+      $('stat-last').textContent = '—';
+      $('stat-date').textContent = '—';
+    }
     $('admin-users-body').innerHTML = users.length === 0
       ? '<tr><td colspan="4">Aucun joueur inscrit pour l\'instant.</td></tr>'
       : users.map((u) => (
         `<tr><td>${esc(u.id)}</td><td>${esc(u.username)}</td>` +
         `<td>${esc(u.email)}</td><td>${esc(fmtDate(u.created_at))}</td></tr>`
       )).join('');
-    $('view-admin').classList.remove('hidden');
   } catch (err) {
     $('admin-load-error').textContent = err.message;
   }
 }
 
 // Revalide la session jeu toutes les 30s : le tag admin pris/retiré en BDD
-// s'applique sans déconnexion/reconnexion.
+// s'applique sans déconnexion/reconnexion, sans changer la vue en cours.
 async function refreshSession() {
   if (!session?.token) return;
   try {
     const { user } = await api('/api/auth/me', { token: session.token });
     session.user = user;
     await window.launcherAPI.saveSession(session);
-    renderConnected();
+    fillConnected();
+    updateAdminUI();
   } catch {
     await window.launcherAPI.clearSession();
     session = null;
@@ -128,6 +158,19 @@ window.addEventListener('DOMContentLoaded', async () => {
   $('go-register').onclick = (e) => { e.preventDefault(); show('view-register'); };
   $('go-login').onclick = (e) => { e.preventDefault(); show('view-login'); };
 
+  // Sous-menu Admin : le bouton ouvre le menu, les liens changent de vue.
+  $('btn-admin-menu').onclick = () => {
+    $('admin-submenu').classList.toggle('hidden');
+    $('admin-chevron').classList.toggle('open');
+  };
+  document.querySelectorAll('#admin-submenu a').forEach((a) => {
+    a.onclick = async (e) => {
+      e.preventDefault();
+      await refreshAdminData();
+      show(a.dataset.view);
+    };
+  });
+
   $('btn-login').onclick = async () => {
     $('login-error').textContent = '';
     try {
@@ -166,6 +209,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     await window.launcherAPI.clearSession();
     session = null;
     $('login-password').value = '';
+    $('admin-block').classList.add('hidden');
+    $('admin-submenu').classList.add('hidden');
+    $('admin-chevron').classList.remove('open');
     show('view-login');
   };
 });

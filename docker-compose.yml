@@ -34,8 +34,13 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change_moi_en_prod_min_32_caracteres_aleatoires}
       JWT_EXPIRES_IN: 7d
       CORS_ORIGIN: "*"
+      MAX_MOD_MB: ${MAX_MOD_MB:-512}
     ports:
       - "3001:3001"
+    volumes:
+      # Stockage des mods uploadés (fichiers + BDD restent sur le même serveur)
+      - mods_data:/app/files
 
 volumes:
   db_data:
+  mods_data:

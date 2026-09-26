@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 const { initDb } = require('./db');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
+const serversRoutes = require('./routes/servers');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3001);
@@ -21,6 +22,7 @@ app.use('/api/admin/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/servers', serversRoutes);
 
 app.use((req, res) => res.status(404).json({ error: 'Route inconnue.' }));
 
