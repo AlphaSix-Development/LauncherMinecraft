@@ -30,6 +30,8 @@ function renderConnected() {
   $('user-created').textContent = session.user.created_at
     ? new Date(session.user.created_at).toLocaleString('fr-FR')
     : '—';
+  // Badge admin : le rôle vient de l'API (lu en BDD), jamais modifiable côté client.
+  $('admin-badge').classList.toggle('hidden', session.user.role !== 'admin');
   show('view-connected');
 }
 
@@ -38,9 +40,9 @@ async function checkHealth() {
     await api('/api/health');
     $('dot').className = 'dot online';
     $('apiStatus').textContent = `API : connectée (${API_URL})`;
-  } catch {
+  } catch (err) {
     $('dot').className = 'dot offline';
-    $('apiStatus').textContent = `API : injoignable (${API_URL})`;
+    $('apiStatus').textContent = `API : injoignable (${API_URL}) — ${err.message}`;
   }
 }
 

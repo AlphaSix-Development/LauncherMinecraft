@@ -23,9 +23,18 @@ async function initDb(retries = 15) {
           username VARCHAR(16) NOT NULL UNIQUE,
           email VARCHAR(255) NOT NULL UNIQUE,
           password_hash VARCHAR(255) NOT NULL,
+          role ENUM('user','admin') NOT NULL DEFAULT 'user',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
       `);
+      // Migration : ajoute la colonne role sur les tables créées avant (ignore si déjà là, errno 1060)
+      // Le rôle ne peut être modifié que directement en BDD (aucune route API ne l'accepte).
+      try {
+        await conn.query(`ALTER TABLE users ADD COLUMN role ENUM('user','admin') NOT NULL DEFAULT 'user'`);
+        console.log('[DB] Migration : colonne users.role ajoutée');
+      } catch (err) {
+        if (err.errno !== 1060) throw err;
+      }
       conn.release();
       console.log('[DB] MySQL connecté + table users OK');
       return;
