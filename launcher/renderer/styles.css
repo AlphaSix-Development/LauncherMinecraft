@@ -1,0 +1,51 @@
+* { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+body { margin: 0; color: #e8eaf0; }
+.bg {
+  position: fixed; inset: 0; z-index: -1;
+  background: radial-gradient(1000px 600px at 70% 20%, #2b3a2e 0%, transparent 60%),
+              radial-gradient(800px 500px at 20% 90%, #1f2f4a 0%, transparent 55%),
+              linear-gradient(#0f1115, #0b0d11);
+}
+.layout { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 280px; padding: 28px 22px; background: rgba(0,0,0,.45);
+  border-right: 1px solid #222; display: flex; flex-direction: column; gap: 18px;
+}
+.logo { font-size: 20px; font-weight: 800; }
+.status { display: flex; align-items: center; gap: 10px; color: #aeb4c2; font-size: 14px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.dot.online { background: #3ddc84; box-shadow: 0 0 10px #3ddc84; }
+.dot.offline { background: #ff5252; }
+.side-footer { margin-top: auto; color: #6b7280; font-size: 12px; }
+.content { flex: 1; display: flex; align-items: center; justify-content: center; padding: 30px; }
+.card {
+  width: 420px; max-width: 92vw; background: rgba(17,20,27,.92);
+  border: 1px solid #2a2f3a; border-radius: 14px; padding: 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.card h1 { margin: 0 0 4px; }
+.sub { color: #9aa1b2; margin: 0 0 18px; }
+label { display: block; margin: 12px 0; font-size: 14px; color: #c6cbd6; }
+input {
+  width: 100%; margin-top: 6px; padding: 11px 12px; border-radius: 8px;
+  border: 1px solid #333a47; background: #0c0f14; color: #fff; outline: none;
+}
+input:focus { border-color: #5aa652; }
+button {
+  width: 100%; margin-top: 14px; padding: 12px; border: 0; border-radius: 8px;
+  background: linear-gradient(#6abe30, #4c9a22); color: #06130a; font-weight: 800;
+  cursor: pointer; font-size: 15px;
+}
+button:hover { filter: brightness(1.07); }
+button.danger { background: #2a2f3a; color: #fff; border: 1px solid #3a4150; }
+.error { color: #ff7b7b; min-height: 20px; font-size: 13px; margin-top: 6px; }
+.switch { text-align: center; color: #9aa1b2; font-size: 14px; }
+.switch a { color: #7dd87d; }
+.hidden { display: none; }
+.connected-badge {
+  display: inline-block; background: rgba(61,220,132,.15); color: #3ddc84;
+  border: 1px solid #3ddc8455; padding: 6px 12px; border-radius: 20px; font-weight: 700;
+}
+.userbox { background: #0c0f14; border: 1px solid #2a2f3a; border-radius: 10px; padding: 14px; margin: 16px 0; display: grid; gap: 8px; font-size: 14px; }
+.userbox span { color: #8b93a5; }
+.soon { background: #1a1407; border: 1px solid #6b5a1f; color: #f2c94c; padding: 12px; border-radius: 10px; font-size: 14px; }

@@ -1,0 +1,20 @@
+{
+  "name": "minecraft-launcher",
+  "version": "0.1.0",
+  "description": "Launcher Minecraft - Electron + API auth",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.tonserveur.launcher",
+    "productName": "MonLauncher",
+    "win": { "target": ["nsis"] },
+    "files": ["main.js", "preload.js", "renderer/**/*", "config.json"]
+  }
+}

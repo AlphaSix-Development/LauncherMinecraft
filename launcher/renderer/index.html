@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src http://localhost:* https://* http://*; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;" />
+  <title>MonLauncher</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo">⛏️ <span id="serverName">Mon Serveur</span></div>
+      <div class="status"><span id="dot" class="dot offline"></span><span id="apiStatus">API : …</span></div>
+      <div class="side-footer">v0.1.0 — pas de jeu pour l'instant</div>
+    </aside>
+
+    <main class="content">
+      <!-- CONNEXION -->
+      <section id="view-login" class="card">
+        <h1>Connexion</h1>
+        <p class="sub">Connecte-toi pour accéder au launcher.</p>
+        <label>Pseudo ou email<input id="login-identifier" placeholder="Steve_92" autocomplete="username" /></label>
+        <label>Mot de passe<input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" /></label>
+        <div id="login-error" class="error"></div>
+        <button id="btn-login">Se connecter</button>
+        <p class="switch">Pas de compte ? <a href="#" id="go-register">Créer un compte</a></p>
+      </section>
+
+      <!-- INSCRIPTION -->
+      <section id="view-register" class="card hidden">
+        <h1>Inscription</h1>
+        <p class="sub">Crée ton compte launcher.</p>
+        <label>Pseudo (3-16, lettres/chiffres/_)<input id="reg-username" placeholder="Steve_92" /></label>
+        <label>Email<input id="reg-email" type="email" placeholder="steve@mail.com" /></label>
+        <label>Mot de passe (6+ caractères)<input id="reg-password" type="password" placeholder="••••••••" autocomplete="new-password" /></label>
+        <div id="register-error" class="error"></div>
+        <button id="btn-register">Créer mon compte</button>
+        <p class="switch">Déjà inscrit ? <a href="#" id="go-login">Se connecter</a></p>
+      </section>
+
+      <!-- CONNECTÉ -->
+      <section id="view-connected" class="card hidden">
+        <div class="connected-badge">✅ Connecté</div>
+        <h1 id="hello">Bienvenue !</h1>
+        <p class="sub" id="connected-sub">Tu es connecté au launcher.</p>
+        <div class="userbox">
+          <div><span>Pseudo :</span> <b id="user-pseudo">—</b></div>
+          <div><span>Email :</span> <b id="user-email">—</b></div>
+          <div><span>Compte créé :</span> <b id="user-created">—</b></div>
+        </div>
+        <div class="soon">🎮 Lancement du jeu : bientôt disponible (étape suivante).</div>
+        <button class="danger" id="btn-logout">Se déconnecter</button>
+      </section>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

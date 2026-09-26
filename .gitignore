@@ -1,0 +1,21 @@
+# Deps
+node_modules/
+
+# Secrets / local
+.env
+*.local
+launcher/config.local.json
+
+# Electron build + session
+launcher/dist/
+launcher/out/
+**/session.json
+
+# OS / editeurs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Docker
+db_data/

@@ -1,0 +1,38 @@
+# API + BDD sur le MEME serveur (recommandé prod)
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-rootpassword_change_me}
+      MYSQL_DATABASE: ${DB_NAME:-launcher_minecraft}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./server/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD:-rootpassword_change_me}
+      DB_NAME: ${DB_NAME:-launcher_minecraft}
+      JWT_SECRET: ${JWT_SECRET:-change_moi_en_prod_min_32_caracteres_aleatoires}
+      JWT_EXPIRES_IN: 7d
+      CORS_ORIGIN: "*"
+    ports:
+      - "3000:3000"
+
+volumes:
+  db_data:
