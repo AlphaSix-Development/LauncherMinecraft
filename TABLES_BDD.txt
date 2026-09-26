@@ -1,0 +1,61 @@
+TABLES BDD - TUTO (phpMyAdmin)
+===============================
+Fichier SQL : server/schema-complet.sql (recupere-le via git pull).
+Base concernee : celle de ton .env (DB_NAME, ex : Launcher).
+
+1. LES 2 TABLES
+---------------
+a) users = comptes JEU (launcher Minecraft)
+   - id : numero auto
+   - username : pseudo (unique, 3-16 caracteres)
+   - email : email (unique)
+   - password_hash : mot de passe CHIFFRE (bcrypt). Jamais en clair !
+   - created_at : date de creation
+   Remplie automatiquement quand un joueur s'inscrit depuis le launcher.
+
+b) panel_users = compte PANEL WEB admin (http://IP:3001/panel/)
+   - id, username (unique), password_hash (bcrypt), created_at
+   1 SEUL compte : cree automatiquement au demarrage de l'API depuis
+   PANEL_ADMIN_USER / PANEL_ADMIN_PASSWORD du .env. Pas d'inscription publique.
+
+2. CREER LES TABLES (une fois)
+------------------------------
+Dans phpMyAdmin : clique sur ta base (ex : Launcher) -> onglet SQL ->
+ouvre server/schema-complet.sql, colle tout -> Executer.
+Verifie : les tables users et panel_users apparaissent a gauche.
+(Note : l'API les cree aussi toute seule au boot ; cette etape sert surtout
+au controle manuel et aux installs fraiches.)
+
+3. VOIR LES COMPTES
+-------------------
+   SELECT id, username, email, created_at FROM users;
+   SELECT id, username, created_at FROM panel_users;
+
+4. SUPPRIMER UN COMPTE (jeu ou panel)
+-------------------------------------
+   DELETE FROM users WHERE username = 'PseudoASupprimer';
+   DELETE FROM panel_users WHERE username = 'admin';
+   (Le compte panel sera RECREE au prochain rebuild si PANEL_ADMIN_USER
+   est toujours dans le .env -> voir PANEL.txt pour changer son mot de passe.)
+
+5. RESET MOT DE PASSE D'UN COMPTE JEU (sans connaitre l'ancien)
+---------------------------------------------------------------
+Interdit de mettre le mot de passe en clair : il faut d'abord le chiffrer
+en bcrypt, puis coller le hash. Genere le hash :
+  - Sur ton PC (dossier server/ du projet) :
+      node -e "console.log(require('bcryptjs').hashSync('NouveauMotDePasse', 12))"
+  - Sur le Linux (si node installe) :
+      node -e "console.log(require('bcryptjs').hashSync('NouveauMotDePasse', 12))"
+      (sinon : npm i -g bcryptjs, ou passe par le launcher : re-inscris le compte)
+  Puis dans phpMyAdmin (onglet SQL) :
+    UPDATE users SET password_hash = '$2b$12$...colle_le_hash_ici...' WHERE username = 'Pseudo';
+  Le joueur se reconnecte avec NouveauMotDePasse.
+
+6. REGLES DE SECURITE
+---------------------
+- Ne mets JAMAIS un mot de passe en clair dans password_hash (connexion impossible).
+- Ne supprime pas la contrainte UNIQUE sur username/email (doublons = 500 cote API).
+- username jeu : lettres/chiffres/_ uniquement, sinon le launcher refuse.
+- Fais un export regulier (phpMyAdmin -> ta base -> Exporter) en sauvegarde.
+
+VOIR AUSSI : PANEL.txt (compte admin panel), INSTALL_LINUX.txt (install complete).

@@ -9,9 +9,7 @@ const USERNAME_RE = /^[a-zA-Z0-9_]{3,16}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function publicUser(row) {
-  // role exposé en lecture seule : aucune route n'accepte role en entrée,
-  // l'élévation admin se fait uniquement en SQL direct (owner BDD).
-  return { id: row.id, username: row.username, email: row.email, role: row.role || 'user', created_at: row.created_at };
+  return { id: row.id, username: row.username, email: row.email, created_at: row.created_at };
 }
 
 // POST /api/auth/register

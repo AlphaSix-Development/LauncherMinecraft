@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Admin</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section id="view-login" class="card">
+      <h1>🔒 Panel Admin</h1>
+      <p class="sub">Accès réservé à l'administrateur.</p>
+      <label>Identifiant<input id="login-username" placeholder="admin" autocomplete="username" /></label>
+      <label>Mot de passe<input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" /></label>
+      <div id="login-error" class="error"></div>
+      <button id="btn-login">Se connecter</button>
+    </section>
+
+    <section id="view-connected" class="card hidden">
+      <div class="ok-badge">✅ Connecté</div>
+      <h1>Vous êtes bien connecté</h1>
+      <p class="sub">Bienvenue, <b id="hello-user">admin</b> !</p>
+      <button class="danger" id="btn-logout">Se déconnecter</button>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -30,8 +30,6 @@ function renderConnected() {
   $('user-created').textContent = session.user.created_at
     ? new Date(session.user.created_at).toLocaleString('fr-FR')
     : '—';
-  // Badge admin : le rôle vient de l'API (lu en BDD), jamais modifiable côté client.
-  $('admin-badge').classList.toggle('hidden', session.user.role !== 'admin');
   show('view-connected');
 }
 
