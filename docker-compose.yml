@@ -22,7 +22,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      PORT: 3000
+      PORT: 3001
       DB_HOST: db
       DB_PORT: 3306
       DB_USER: root
@@ -32,7 +32,7 @@ services:
       JWT_EXPIRES_IN: 7d
       CORS_ORIGIN: "*"
     ports:
-      - "3000:3000"
+      - "3001:3001"
 
 volumes:
   db_data:

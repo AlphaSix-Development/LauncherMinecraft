@@ -30,13 +30,13 @@ docker compose up -d --build
 docker compose logs -f api
 ```
 
-Vérif : `curl http://TON_IP_SERVEUR:3000/api/health` → `{"ok":true,...}`
+Vérif : `curl http://TON_IP_SERVEUR:3001/api/health` → `{"ok":true,...}`
 
 > API + MySQL tournent sur la même machine, reliés par le réseau Docker interne (`DB_HOST=db`). C'est ce que tu voulais.
 
 Sécurité prod :
 - change `JWT_SECRET` (32+ caractères aléatoires)
-- ouvre le port 3000 (ou mets un reverse proxy Nginx + HTTPS)
+- ouvre le port 3001 (ou mets un reverse proxy Nginx + HTTPS)
 - `DB_PASSWORD` fort
 
 ## 2. Lancer l'API en local (dev, sans Docker)
@@ -47,7 +47,7 @@ cd server
 cp .env.example .env
 npm install
 npm run dev
-# -> http://localhost:3000/api/health
+# -> http://localhost:3001/api/health
 ```
 
 ## 3. Lancer le launcher (dev)
@@ -60,7 +60,7 @@ npm start
 
 En prod, pointe le launcher vers ton serveur : édite `launcher/config.json` :
 ```json
-{ "apiUrl": "http://TON_IP_SERVEUR:3000", "serverName": "Mon Serveur" }
+{ "apiUrl": "http://TON_IP_SERVEUR:3001", "serverName": "Mon Serveur" }
 ```
 Puis build l'exe :
 ```bash

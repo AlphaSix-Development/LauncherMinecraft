@@ -11,7 +11,7 @@ function readConfig() {
     const raw = fs.readFileSync(path.join(__dirname, 'config.json'), 'utf-8');
     return JSON.parse(raw);
   } catch {
-    return { apiUrl: 'http://localhost:3000', serverName: 'Mon Serveur Minecraft' };
+    return { apiUrl: 'http://localhost:3001', serverName: 'Mon Serveur Minecraft' };
   }
 }
 

@@ -1,4 +1,4 @@
-let API_URL = 'http://localhost:3000';
+let API_URL = 'http://localhost:3001';
 let session = null; // { token, user }
 
 const $ = (id) => document.getElementById(id);

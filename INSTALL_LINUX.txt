@@ -1,5 +1,6 @@
 INSTALLATION API + BDD SUR LINUX (Ubuntu / Debian)
 Launcher Minecraft - API Express + MySQL (meme serveur via Docker)
+Port API : 3001
 ====================================================================
 
 1. PREREQUIS SUR TON LINUX
@@ -13,15 +14,15 @@ Si manquant :
   sudo systemctl enable --now docker
   sudo usermod -aG docker $USER  (puis reconnecte-toi)
 
-2. TRANSFERER LE PROJET SUR LE LINUX
-------------------------------------
-Depuis ton PC Windows (PowerShell) :
-  scp -r E:\LauncherMinecraft user@IP_SERVEUR:/home/user/LauncherMinecraft
-
-Puis sur le Linux :
-  cd ~/LauncherMinecraft
-  ls -R | head -30
+2. RECUPERER LE PROJET SUR LE LINUX
+-----------------------------------
+  git clone https://github.com/AlphaSix-Development/LauncherMinecraft.git
+  cd LauncherMinecraft
+  ls
   # tu dois voir : docker-compose.yml, .env.example, server/, launcher/
+
+  Mise a jour plus tard :
+  git pull
 
 3. CONFIGURER LE .ENV PROD (a la racine)
 ----------------------------------------
@@ -48,46 +49,46 @@ IMPORTANT :
   docker compose logs -f api
   # Attends ces lignes :
   #   [DB] MySQL connecte + table users OK
-  #   [API] http://localhost:3000 -> /api/health
+  #   [API] http://localhost:3001 -> /api/health
   # CTRL+C pour quitter les logs (ca continue en fond).
 
 5. VERIFIER QUE CA REPOND (sur le Linux)
 ----------------------------------------
-  curl http://localhost:3000/api/health
+  curl http://localhost:3001/api/health
   # attendu : {"ok":true,"time":"..."}
 
   # Test inscription :
-  curl -X POST http://localhost:3000/api/auth/register \
+  curl -X POST http://localhost:3001/api/auth/register \
     -H "Content-Type: application/json" \
     -d '{"username":"Test_01","email":"test@mail.com","password":"secret123"}'
   # attendu : {"token":"...","user":{...}}
 
   # Test connexion :
-  curl -X POST http://localhost:3000/api/auth/login \
+  curl -X POST http://localhost:3001/api/auth/login \
     -H "Content-Type: application/json" \
     -d '{"identifier":"Test_01","password":"secret123"}'
 
   # Test token :
   TOKEN=colle_ton_token_ici
-  curl http://localhost:3000/api/auth/me -H "Authorization: Bearer $TOKEN"
+  curl http://localhost:3001/api/auth/me -H "Authorization: Bearer $TOKEN"
 
 6. OUVRIR LE PORT POUR LE LAUNCHER
 ----------------------------------
-  ss -tlnp | grep 3000
-  sudo ufw allow 3000/tcp
+  ss -tlnp | grep 3001
+  sudo ufw allow 3001/tcp
   sudo ufw status
 
   Depuis ton PC Windows (PowerShell ou navigateur) :
-  curl http://IP_SERVEUR:3000/api/health
-  # remplace IP_SERVEUR par l'IP publique du VPS, ex : http://51.91.12.34:3000/api/health
+  curl http://IP_SERVEUR:3001/api/health
+  # remplace IP_SERVEUR par l'IP publique du VPS, ex : http://51.91.12.34:3001/api/health
 
-  Si OVH / Hetzner / firewall cloud : ouvre aussi le port 3000 dans le panel.
+  Si OVH / Hetzner / firewall cloud : ouvre aussi le port 3001 dans le panel.
 
 7. POINTER LE LAUNCHER VERS LE SERVEUR
 --------------------------------------
 Sur ton PC, edite launcher/config.json :
   {
-    "apiUrl": "http://IP_SERVEUR:3000",
+    "apiUrl": "http://IP_SERVEUR:3001",
     "serverName": "Mon Serveur"
   }
 
@@ -108,7 +109,7 @@ Puis rebuild l'exe :
   docker volume ls                  # db_data = donnees MySQL persistantes
 
   Mettre a jour apres modif du code :
-  Sur Linux : git pull OU re-scp, puis docker compose up -d --build
+  Sur Linux : git pull, puis docker compose up -d --build
 
 9. DEPANNAGE
 ------------
@@ -117,10 +118,10 @@ Puis rebuild l'exe :
 - "JWT_SECRET trop court" dans les logs :
   -> regenere un secret 48 chars dans .env puis up -d
 - curl OK en local mais pas depuis PC :
-  -> firewall ufw / firewall cloud / mauvaise IP. Teste : telnet IP 3000
+  -> firewall ufw / firewall cloud / mauvaise IP. Teste : telnet IP 3001
 - "Pseudo ou email deja utilise" (409) : normal, compte deja cree. Teste login.
-- Port 3000 deja pris :
-  -> change dans docker-compose.yml "3001:3000" puis apiUrl http://IP:3001
+- Port 3001 deja pris (ss -tlnp | grep 3001 montre un autre service) :
+  -> change le mapping dans docker-compose.yml, ex "3002:3001", puis apiUrl http://IP:3002
 - Reset complet BDD (ATTENTION efface tout) :
   docker compose down -v
   docker compose up -d --build
@@ -132,4 +133,4 @@ Puis rebuild l'exe :
 - Pour du public durable : passe en domaine + HTTPS (Nginx/Caddy reverse proxy).
 - Sauvegarde : docker exec ... mysqldump ou snapshot volume db_data.
 
-FIN - Si /api/health repond depuis ton PC, ton launcher peut se connecter.
+FIN - Si /api/health repond depuis ton PC sur le port 3001, ton launcher peut se connecter.
