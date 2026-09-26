@@ -7,6 +7,7 @@ const { initDb } = require('./db');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const serversRoutes = require('./routes/servers');
+const filesRoutes = require('./routes/files');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3001);
@@ -23,6 +24,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISO
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/servers', serversRoutes);
+app.use('/api/files', filesRoutes);
 
 app.use((req, res) => res.status(404).json({ error: 'Route inconnue.' }));
 

@@ -77,7 +77,7 @@ npm run dist
 - `GET /api/admin/users` (tag `admin` en BDD requis, relu à chaque appel) → liste joueurs
 - `GET /api/servers` → liste serveurs (+ nb mods) ; `GET /api/servers/:id` → détail
 - `POST/PUT/DELETE /api/admin/servers` (+ `/:id`) → CRUD serveurs (tag requis)
-- Mods (upload/sync, P2) : `GET /api/servers/:id/mods`, `POST /api/admin/servers/:id/mods`, `DELETE /api/admin/mods/:id`
+- Mods : `GET /api/servers/:id/mods` (manifeste + URLs, public), `POST /api/admin/servers/:id/mods` (upload zip/jar, champ `mods`, tag requis), `DELETE /api/admin/mods/:id`, `GET /api/files/:sha1` (téléchargement)
 
 ## Tag admin (owner BDD uniquement, en SQL)
 `UPDATE users SET role = 'admin' WHERE username = 'Pseudo';`

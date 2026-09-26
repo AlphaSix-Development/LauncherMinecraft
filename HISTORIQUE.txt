@@ -99,9 +99,29 @@ COMMANDES GENERALES (PC Windows, dossier projet)
   npm run dist     # exe -> launcher\dist\MonLauncher Setup 0.1.0.exe
 
 ------------------------------------------------------
-PROCHAINES ETAPES PREVUES (P2 -> P5)
+ETAPE 7 - MODS : UPLOAD / SERVING / SYNC (P2, fait)
 ------------------------------------------------------
-  P2 : upload mods (zip/jar) + serving + bump modpack_version.
+Fait : upload drag-drop (zip extrait + jar seuls, champ "mods", max 5 fichiers,
+MAX_MOD_MB=512), validation (extension + signature zip), stockage par sha1
+(dedup multi-serveurs) dans volume mods_data:/app/files, manifeste
+GET /api/servers/:id/mods (sha1 + url pour synchro launcher),
+telechargement GET /api/files/:sha1 (cache immutable),
+suppression mod + nettoyage orphelins, bump modpack_version auto,
+suppression serveur = fichiers orphelins nettoyes.
+Fichiers : server/src/files.js (nouveau), routes/files.js (nouveau),
+routes/admin.js, routes/servers.js, docker-compose.yml, README.md.
+
+Tester (apres git pull + rebuild Linux, TOKEN = compte tag admin) :
+  # upload (remplace UNZIP.zip par un vrai zip/jar) :
+  curl -X POST http://localhost:3001/api/admin/servers/1/mods -H "Authorization: Bearer TOKEN" -F "mods=@mods.zip"
+  # attendu : {"modpack_version":2,"added":[...],"skipped":0}
+  curl http://localhost:3001/api/servers/1/mods
+  curl -o mod.jar http://localhost:3001/api/files/SHA1_ICI
+  curl -X DELETE http://localhost:3001/api/admin/mods/1 -H "Authorization: Bearer TOKEN"
+
+------------------------------------------------------
+PROCHAINES ETAPES PREVUES (P3 -> P5)
+------------------------------------------------------
   P3 : UI admin launcher (creer serveur + drag-drop mods).
   P4 : UI joueur (cartes serveurs + JOUER crack + synchro mods + popup switch).
   P5 : detection Java, docs SERVERS.txt, exe final.
