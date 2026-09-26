@@ -1,0 +1,60 @@
+SERVERS + LANCEMENT JEU - TUTO
+==============================
+manuel, sans dependance lourde) avec TON serveur en premier.
+
+1. PRINCIPE
+-----------
+- Chaque serveur de la BDD (table servers) = une carte dans le launcher (bouton Jouer).
+- Au clic JOUER : Java verifie -> mods synchronises (sha1) -> servers.dat ecrit
+  -> Minecraft lance en crack avec ton pseudo (UUID offline deterministe).
+- Dossiers (PC joueur) : %AppData%/MonLauncher/
+    minecraft/            fichiers partages (versions, librairies, assets Mojang/Forge)
+    instances/<id>/       par serveur : mods/, saves, servers.dat, options
+- Mods = miroir exact du serveur : ce qui manque se telecharge, les .jar
+  en trop sont supprimes. Modpack vX affiche = version vue par l'API.
+- Memoire fixe V1 : 2G min / 4G max (reglages perso = plus tard).
+
+2. JAVA (obligatoire, non inclus)
+---------------------------------
+  MC <= 1.16.5  -> Java 8  |  MC 1.17 -> 1.20.4 -> Java 17  |  MC >= 1.20.5 -> Java 21
+  Le launcher detecte `java` (PATH) puis JAVA_HOME. Si absent/incompatible :
+  message + lien https://adoptium.net/fr/temurin/releases/
+  Apres install : referme/rouvre le launcher (PATH recharge), puis JOUER.
+  Note : vieilles versions (<=1.16 + Forge) + Java recent = crash possible.
+  Ideal : Java 8 pour <=1.16.5, Java 17 pour 1.17-1.20.4, Java 21 pour 1.20.5+.
+
+3. SERVEURS COTE SERVEUR (rappel critique)
+------------------------------------------
+  Tes serveurs/npcs doivent accepter le crack : server.properties
+    online-mode=false
+  Sinon : "Failed to login" / deconnecte direct. Skins = Steve/Alex (pas de
+  compte Microsoft = pas de skin perso).
+
+4. CREER UN SERVEUR (compte tag admin, dans le launcher)
+--------------------------------------------------------
+  Menu Admin -> Serveurs : nom, IP, port, version MC (liste Mojang complete),
+  loader vanilla/forge (+ version Forge proposee), Creer.
+  Puis selectionne-le (bouton Mods) et glisse ton modpack.zip ou des .jar.
+  Le n° modpack (vX) monte a chaque changement.
+
+5. JOUER (compte normal)
+------------------------
+  Menu Jouer : choisis un serveur -> JOUER. Progression + logs affiches.
+  Premier lancement = long (Go Mojang/Forge + mods), les suivants = rapides.
+  Une seule partie a la fois : clic sur un autre serveur -> popup
+  "En attente de la fermeture du jeu" (+ auto-lancement apres fermeture)
+  -> bouton "Fermer le jeu" pour tuer la partie en cours.
+
+6. DEPANNAGE
+------------
+- "Java X+ requis..." -> installe le bon Java (voir §2).
+- Forge bloque longtemps sur l'install -> normal au 1er lancement (installeur
+  officiel ~10-30 Mo + dependances), ne ferme pas le launcher.
+- "Manifeste mods indisponible" -> API non rebuild / serveur supprime.
+- "Fichier corrompu apres telechargement" -> relance, sinon re-upload le mod.
+- Crash au demarrage du jeu -> ouvre les Logs (details), cherche
+  UnsupportedClassVersionError (= mauvais Java, voir §2).
+- Antivirus qui bloque java.exe -> autorise (faux positif classique).
+- Quitter le launcher tue aussi le jeu (meme processus parent).
+
+VOIR AUSSI : HISTORIQUE.txt (etapes), TABLES_BDD.txt (tables servers/mods).

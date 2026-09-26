@@ -120,11 +120,28 @@ Tester (apres git pull + rebuild Linux, TOKEN = compte tag admin) :
   curl -X DELETE http://localhost:3001/api/admin/mods/1 -H "Authorization: Bearer TOKEN"
 
 ------------------------------------------------------
-PROCHAINES ETAPES PREVUES (P3 -> P5)
+ETAPE 8 - P3+P4 : SERVEURS DANS LE LAUNCHER + JEU CRACK (fait)
 ------------------------------------------------------
-  P3 : UI admin launcher (creer serveur + drag-drop mods).
-  P4 : UI joueur (cartes serveurs + JOUER crack + synchro mods + popup switch).
-  P5 : detection Java, docs SERVERS.txt, exe final.
+P3 admin (tag requis) : sous-menu Serveurs (liste + creer/editer/supprimer),
+versions MC (liste Mojang) + Forge (maven), drag-drop zip/jar avec progression,
+liste mods + suppression, n° modpack affiche.
+P4 joueur : bouton Jouer (menu gauche) -> cartes serveurs -> JOUER.
+Lancement : Java detecte (8/17/21 selon MC), mods synchronises (sha1),
+servers.dat avec serveur en premier, MCLC offline (pseudo + UUID offline).
+Une seule instance : autre serveur -> popup "En attente de la fermeture
+du jeu" + bouton Fermer -> auto-lancement. Progression + logs.
+Fichiers : launcher/game/*.js (nouveau), main.js, preload.js, renderer/*,
+package.json (dep minecraft-launcher-core).
+Exe rebuild : cd launcher && npm run dist.
+VOIR : SERVERS.txt (tuto complet).
+
+------------------------------------------------------
+RESTE (P5 polish, plus tard)
+------------------------------------------------------
+  - Memoire reglable + Java custom dans les reglages.
+  - Ping/statut serveurs sur les cartes.
+  - Skins persos / auth Microsoft (optionnel).
+  - Icone exe perso.
 
 VOIR AUSSI : INSTALL_LINUX.txt (install), TABLES_BDD.txt (BDD),
 MCD.txt (modele), README.md (endpoints).

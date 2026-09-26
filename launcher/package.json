@@ -14,7 +14,20 @@
   "build": {
     "appId": "com.tonserveur.launcher",
     "productName": "MonLauncher",
-    "win": { "target": ["nsis"] },
-    "files": ["main.js", "preload.js", "renderer/**/*", "config.json"]
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "game/**/*",
+      "renderer/**/*",
+      "config.json"
+    ]
+  },
+  "dependencies": {
+    "minecraft-launcher-core": "^3.18.2"
   }
 }

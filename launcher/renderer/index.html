@@ -19,7 +19,11 @@
           <a href="#" data-view="view-connected">👤 Mon compte</a>
           <a href="#" data-view="view-admin-dashboard">📊 Tableau de bord</a>
           <a href="#" data-view="view-admin-users">👥 Joueurs</a>
+          <a href="#" data-view="view-admin-servers">🖥️ Serveurs</a>
         </div>
+      </div>
+      <div id="play-block" class="side-play hidden">
+        <button id="btn-play-menu" class="play-toggle">🎮 Jouer</button>
       </div>
       <div class="side-footer">v0.1.0 — pas de jeu pour l'instant</div>
     </aside>
@@ -72,6 +76,49 @@
         <div id="admin-load-error" class="error"></div>
       </section>
 
+      <section id="view-admin-servers" class="card wide hidden">
+        <h1>🖥️ Serveurs de jeu</h1>
+        <p class="sub">Crée tes serveurs, puis glisse un zip de modpack ou des .jar.</p>
+        <div id="servers-list"><p class="sub">Chargement…</p></div>
+
+        <h2 id="srv-form-title">➕ Nouveau serveur</h2>
+        <div class="form-grid">
+          <label>Nom<input id="srv-name" placeholder="Serveur Semi-RP" maxlength="64" /></label>
+          <label>IP / host<input id="srv-ip" placeholder="play.monserveur.fr" /></label>
+          <label>Port<input id="srv-port" type="number" value="25565" min="1" max="65535" /></label>
+          <label>Version Minecraft<select id="srv-mc"><option value="">Chargement…</option></select></label>
+          <label>Loader<select id="srv-loader"><option value="vanilla">Vanilla</option><option value="forge">Forge</option></select></label>
+          <label>Version loader<input id="srv-loader-version" list="forge-versions" placeholder="ex : 47.2.0 (vide si vanilla)" maxlength="32" /><datalist id="forge-versions"></datalist></label>
+        </div>
+        <div id="srv-error" class="error"></div>
+        <div class="btn-row">
+          <button id="btn-srv-save">Créer le serveur</button>
+          <button class="danger hidden" id="btn-srv-cancel">Annuler</button>
+        </div>
+
+        <div id="srv-mods-block" class="hidden">
+          <h2>📦 Mods de <span id="srv-mods-name">—</span> <small>(modpack v<span id="srv-modpack-v">1</span>)</small></h2>
+          <div id="dropzone" class="dropzone">Glisse ici ton <b>modpack.zip</b> ou des <b>.jar</b><br /><span>ou clique pour choisir</span></div>
+          <input id="mods-file" type="file" accept=".zip,.jar" multiple class="hidden" />
+          <div id="upload-progress" class="progress hidden"><div id="upload-bar"></div></div>
+          <div id="upload-msg" class="error"></div>
+          <div id="srv-mods-list"></div>
+        </div>
+      </section>
+
+      <!-- JOUER -->
+      <section id="view-play" class="card wide hidden">
+        <h1>🎮 Jouer</h1>
+        <p class="sub">Choisis ton serveur. Lancement crack avec ton pseudo <b id="play-pseudo">—</b>, serveur pré-ajouté en multijoueur.</p>
+        <div id="play-servers"><p class="sub">Chargement…</p></div>
+        <div id="play-progress-block" class="hidden">
+          <div id="play-status" class="sub">Prêt.</div>
+          <div class="progress"><div id="play-bar"></div></div>
+          <details><summary>Logs</summary><pre id="play-log"></pre></details>
+        </div>
+        <div id="play-error" class="error"></div>
+      </section>
+
       <!-- CONNECTÉ -->
       <section id="view-connected" class="card hidden">
         <div class="connected-badge">✅ Connecté</div>
@@ -87,6 +134,17 @@
       </section>
     </main>
   </div>
+
+  <!-- Popup : changement de serveur pendant une partie -->
+  <div id="modal-wait" class="modal hidden">
+    <div class="modal-box">
+      <h2>⏳ En attente de la fermeture du jeu</h2>
+      <p class="sub">Une partie est en cours sur un autre serveur.</p>
+      <button class="danger" id="btn-kill-game">Fermer le jeu</button>
+      <button id="btn-wait-cancel">Annuler</button>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

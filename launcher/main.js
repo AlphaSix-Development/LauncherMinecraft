@@ -1,6 +1,15 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const game = require('./game/launcher');
+
+let mainWin = null;
+
+function sendGameEvent(msg) {
+  try {
+    mainWin?.webContents.send('game-event', msg);
+  } catch {}
+}
 
 function getSessionPath() {
   return path.join(app.getPath('userData'), 'session.json');
@@ -30,6 +39,8 @@ function createWindow() {
     }
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  mainWin = win;
+  win.on('closed', () => { mainWin = null; });
 }
 
 app.whenReady().then(() => {
@@ -67,3 +78,28 @@ ipcMain.handle('clear-session', () => {
   try { fs.unlinkSync(getSessionPath()); } catch {}
   return true;
 });
+
+// --- Jeu : lancement crack (MCLC offline), une seule instance à la fois ---
+ipcMain.handle('game-status', () => game.getState());
+
+ipcMain.handle('game-launch', async (e, { server, username }) => {
+  const state = game.getState();
+  if (state.running) {
+    return { ok: false, error: 'ALREADY_RUNNING', serverId: state.serverId };
+  }
+  try {
+    const config = readConfig();
+    await game.launchGame({
+      server,
+      username,
+      apiUrl: String(config.apiUrl || 'http://localhost:3001').replace(/\/$/, ''),
+      userDataDir: app.getPath('userData'),
+      send: sendGameEvent
+    });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message || 'Échec du lancement.', code: err.code };
+  }
+});
+
+ipcMain.handle('game-kill', () => ({ ok: game.killGame() }));
