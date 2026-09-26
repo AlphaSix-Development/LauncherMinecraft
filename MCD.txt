@@ -1,0 +1,29 @@
+MCD - LAUNCHER MINECRAFT (BDD MySQL)
+===================================
+Base : celle du .env (DB_NAME, ex : Launcher). Gerable via phpMyAdmin.
+
+ENTITES (aucune association : tables independantes)
+---------------------------------------------------
+  JOUEUR  (table users)              ADMIN_PANEL  (table panel_users)
+  - id            : INT, PK, auto     - id            : INT, PK, auto
+  - username      : VARCHAR(16),      - username      : VARCHAR(32),
+                    UNIQUE                              UNIQUE
+  - email         : VARCHAR(255),    - password_hash : VARCHAR(255, bcrypt)
+                    UNIQUE            - created_at    : TIMESTAMP
+  - password_hash : VARCHAR(255, bcrypt)
+  - created_at    : TIMESTAMP
+
+MLD (Modele Logique)
+--------------------
+  users (id#, username*, email*, password_hash, created_at)
+  panel_users (id#, username*, password_hash, created_at)
+  (# = cle primaire, * = UNIQUE ; pas de cle etrangere)
+
+QUI REMPLIT QUOI
+----------------
+  users        <- inscription/connexion depuis le launcher (API /api/auth/*)
+  panel_users  <- 1 seul compte, cree auto au boot depuis PANEL_ADMIN_USER /
+                   PANEL_ADMIN_PASSWORD du .env (aucune inscription publique)
+
+SCRIPT DE CREATION : server/schema-complet.sql (a jouer dans phpMyAdmin,
+onglet SQL). Detail colonnes + gestion manuelle : voir TABLES_BDD.txt.

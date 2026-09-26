@@ -24,7 +24,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/panel', panelRoutes);
 
 // Panel web admin (fichiers dans src/public/panel, embarqués dans l'image Docker)
-app.use('/panel', express.static(path.join(__dirname, 'public', 'panel')));
+// maxAge 0 : le navigateur revalide à chaque visite (fini le cache fantôme).
+app.use('/panel', express.static(path.join(__dirname, 'public', 'panel'), { maxAge: 0 }));
 
 app.use((req, res) => res.status(404).json({ error: 'Route inconnue.' }));
 

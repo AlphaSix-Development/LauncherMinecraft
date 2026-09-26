@@ -4,26 +4,57 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Panel Admin</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
-  <main class="wrap">
-    <section id="view-login" class="card">
-      <h1>🔒 Panel Admin</h1>
-      <p class="sub">Accès réservé à l'administrateur.</p>
-      <label>Identifiant<input id="login-username" placeholder="admin" autocomplete="username" /></label>
-      <label>Mot de passe<input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" /></label>
-      <div id="login-error" class="error"></div>
-      <button id="btn-login">Se connecter</button>
-    </section>
+  <noscript><div class="noscript">⚠️ Le panel nécessite JavaScript. Active-le puis recharge (Ctrl+F5).</div></noscript>
+  <div class="bg"></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="logo">⛏️ <span>Panel Admin</span></div>
+      <div class="status"><span id="dot" class="dot offline"></span><span id="apiStatus">API : …</span></div>
+      <div class="side-footer">Launcher Minecraft — admin only</div>
+    </aside>
 
-    <section id="view-connected" class="card hidden">
-      <div class="ok-badge">✅ Connecté</div>
-      <h1>Vous êtes bien connecté</h1>
-      <p class="sub">Bienvenue, <b id="hello-user">admin</b> !</p>
-      <button class="danger" id="btn-logout">Se déconnecter</button>
-    </section>
-  </main>
-  <script src="app.js"></script>
+    <main class="content">
+      <!-- CONNEXION -->
+      <section id="view-login" class="card">
+        <h1>🔒 Panel Admin</h1>
+        <p class="sub">Accès réservé à l'administrateur.</p>
+        <label>Identifiant<input id="login-username" placeholder="admin" autocomplete="username" /></label>
+        <label>Mot de passe<input id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" /></label>
+        <div id="login-error" class="error"></div>
+        <button id="btn-login">Se connecter</button>
+      </section>
+
+      <!-- DASHBOARD : hidden natif + classe (blindé même si le CSS externe échoue) -->
+      <section id="view-connected" class="dash" hidden>
+        <div class="dash-head">
+          <div>
+            <div class="ok-badge">✅ Connecté</div>
+            <h1>Vous êtes bien connecté</h1>
+            <p class="sub">Bienvenue, <b id="hello-user">admin</b> !</p>
+          </div>
+          <button class="danger small" id="btn-logout">Se déconnecter</button>
+        </div>
+        <div class="stats">
+          <div class="stat"><span class="stat-num" id="stat-total">—</span><span class="stat-label">Joueurs inscrits</span></div>
+          <div class="stat"><span class="stat-num" id="stat-last">—</span><span class="stat-label">Dernier inscrit</span></div>
+          <div class="stat"><span class="stat-num" id="stat-date">—</span><span class="stat-label">Date d'inscription</span></div>
+        </div>
+        <div class="card table-card">
+          <h2>👥 Joueurs</h2>
+          <div id="users-error" class="error"></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Pseudo</th><th>Email</th><th>Inscrit le</th></tr></thead>
+              <tbody id="users-body"><tr><td colspan="4">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

@@ -66,4 +66,17 @@ router.get('/me', panelAuth, (req, res) => {
   return res.json({ user: req.panelUser });
 });
 
+// GET /api/panel/users — liste des joueurs (lecture seule, jamais les hash).
+router.get('/users', panelAuth, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, username, email, created_at FROM users ORDER BY id DESC LIMIT 500'
+    );
+    return res.json({ users: rows });
+  } catch (err) {
+    console.error('[panel/users]', err);
+    return res.status(500).json({ error: 'Erreur serveur.' });
+  }
+});
+
 module.exports = router;
