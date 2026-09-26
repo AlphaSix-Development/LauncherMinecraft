@@ -2,6 +2,7 @@ PANEL WEB ADMIN - TUTO
 ======================
 Acces : http://IP_SERVEUR:3001/panel/  (ex : http://89.168.51.174:3001/panel/)
 Pas de port a ouvrir en plus : c'est le meme que l'API (3001).
+Inscription (page TEMPORAIRE, sera supprimee) : http://IP_SERVEUR:3001/register/
 
 PRINCIPE
 --------
@@ -46,6 +47,14 @@ DEPANNAGE
 ---------
 - Page blanche / 404 sur /panel/ : verifie le slash final (/panel/) et que
   l'image a bien ete rebuild (docker compose up -d --build apres git pull).
+- PAGE QUI NE CHANGE PAS / vieux design / CSS absent : c'est le CACHE du
+  navigateur (le serveur a la bonne version, verifie en curl). Solution :
+  Chrome/Edge : F12 -> onglet Application -> Stockage -> "Effacer les donnees
+  du site", ou Ctrl+Maj+Suppr -> "Images et fichiers en cache" -> Effacer.
+  Puis recharge /panel/. Le HTML est en no-store depuis la v4, ca ne reviendra plus.
+- /register/ : page d'inscription TEMPORAIRE (comptes jeu via le web).
+  Pour la supprimer plus tard : effacer server/src/public/register/ + le bloc
+  "/register" dans server/src/index.js, puis rebuild.
 - "Identifiants incorrects." alors que c'est les bons : les vars .env etaient
   vides au boot -> regarde les logs : "[DB] PANEL_ADMIN_USER/PASSWORD non
   definis". Corrige le .env puis rebuild (le seed ne tourne qu'au demarrage).

@@ -1,0 +1,27 @@
+<!-- REGISTER v1 - PAGE TEMPORAIRE (à supprimer plus tard avec le dossier public/register) -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inscription</title>
+  <link rel="stylesheet" href="styles.css?v=1" />
+</head>
+<body>
+  <noscript><div class="noscript">⚠️ Cette page nécessite JavaScript.</div></noscript>
+  <div class="bg"></div>
+  <main class="wrap">
+    <section class="card">
+      <h1>📝 Inscription</h1>
+      <p class="sub">Crée ton compte jeu. <span class="tmp">Page temporaire.</span></p>
+      <label>Pseudo (3-16, lettres/chiffres/_)<input id="reg-username" placeholder="Steve_92" autocomplete="username" /></label>
+      <label>Email<input id="reg-email" type="email" placeholder="steve@mail.com" /></label>
+      <label>Mot de passe (6+ caractères)<input id="reg-password" type="password" placeholder="••••••••" autocomplete="new-password" /></label>
+      <div id="register-error" class="error"></div>
+      <div id="register-ok" class="ok"></div>
+      <button id="btn-register">Créer mon compte</button>
+    </section>
+  </main>
+  <script src="app.js?v=1"></script>
+</body>
+</html>

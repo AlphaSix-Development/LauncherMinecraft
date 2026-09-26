@@ -23,9 +23,17 @@ app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISO
 app.use('/api/auth', authRoutes);
 app.use('/api/panel', panelRoutes);
 
+// no-store sur le HTML : le navigateur ne garde jamais une vieille page en cache
+// (les CSS/JS ont ?v= dans l'URL donc ils suivent automatiquement).
+function noStoreHtml(res, filePath) {
+  if (String(filePath).endsWith('.html')) res.setHeader('Cache-Control', 'no-store');
+}
+
 // Panel web admin (fichiers dans src/public/panel, embarqués dans l'image Docker)
-// maxAge 0 : le navigateur revalide à chaque visite (fini le cache fantôme).
-app.use('/panel', express.static(path.join(__dirname, 'public', 'panel'), { maxAge: 0 }));
+app.use('/panel', express.static(path.join(__dirname, 'public', 'panel'), { maxAge: 0, setHeaders: noStoreHtml }));
+
+// Page d'inscription TEMPORAIRE (à supprimer plus tard : effacer ce bloc + le dossier public/register).
+app.use('/register', express.static(path.join(__dirname, 'public', 'register'), { maxAge: 0, setHeaders: noStoreHtml }));
 
 app.use((req, res) => res.status(404).json({ error: 'Route inconnue.' }));
 
