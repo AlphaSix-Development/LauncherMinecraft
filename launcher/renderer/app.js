@@ -4,8 +4,23 @@ let session = null; // { token, user }
 const $ = (id) => document.getElementById(id);
 
 function show(view) {
-  ['view-login', 'view-register', 'view-connected'].forEach((v) => $(v).classList.add('hidden'));
+  ['view-login', 'view-register', 'view-connected', 'view-admin'].forEach((v) => $(v).classList.add('hidden'));
   $(view).classList.remove('hidden');
+}
+
+// Échappe le HTML (pseudos/emails BDD affichés dans le tableau admin).
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function fmtDate(iso) {
+  try {
+    return new Date(iso).toLocaleString('fr-FR');
+  } catch {
+    return '—';
+  }
 }
 
 async function api(path, { method = 'GET', body, token } = {}) {
@@ -31,6 +46,48 @@ function renderConnected() {
     ? new Date(session.user.created_at).toLocaleString('fr-FR')
     : '—';
   show('view-connected');
+  refreshAdminSection();
+}
+
+// Admin auto : visible si le compte jeu a le tag admin en BDD, sans 2e login.
+// Le tag est relu via /api/admin/users (qui re-vérifie en BDD) : si le owner
+// le retire, la section se masque toute seule, pas besoin de se déconnecter.
+async function refreshAdminSection() {
+  if (!session || session.user.role !== 'admin') {
+    $('view-admin').classList.add('hidden');
+    return;
+  }
+  try {
+    $('admin-load-error').textContent = '';
+    const { users } = await api('/api/admin/users', { token: session.token });
+    $('admin-hello').textContent = session.user.username;
+    $('admin-total').textContent = users.length;
+    $('admin-users-body').innerHTML = users.length === 0
+      ? '<tr><td colspan="4">Aucun joueur inscrit pour l\'instant.</td></tr>'
+      : users.map((u) => (
+        `<tr><td>${esc(u.id)}</td><td>${esc(u.username)}</td>` +
+        `<td>${esc(u.email)}</td><td>${esc(fmtDate(u.created_at))}</td></tr>`
+      )).join('');
+    $('view-admin').classList.remove('hidden');
+  } catch (err) {
+    $('admin-load-error').textContent = err.message;
+  }
+}
+
+// Revalide la session jeu toutes les 30s : le tag admin pris/retiré en BDD
+// s'applique sans déconnexion/reconnexion.
+async function refreshSession() {
+  if (!session?.token) return;
+  try {
+    const { user } = await api('/api/auth/me', { token: session.token });
+    session.user = user;
+    await window.launcherAPI.saveSession(session);
+    renderConnected();
+  } catch {
+    await window.launcherAPI.clearSession();
+    session = null;
+    show('view-login');
+  }
 }
 
 async function checkHealth() {
@@ -50,6 +107,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   $('serverName').textContent = config.serverName || 'Mon Serveur';
   checkHealth();
   setInterval(checkHealth, 10000);
+  setInterval(refreshSession, 30000);
 
   // Session existante -> vérifie le token côté API
   session = await window.launcherAPI.getSession();

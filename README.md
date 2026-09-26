@@ -74,7 +74,11 @@ npm run dist
 - `POST /api/auth/login` `{ identifier, password }` → `{ token, user }`
 - `GET /api/auth/me` header `Authorization: Bearer <token>` → `{ user }`
 - `GET /api/health`
-- Panel admin : `http://TON_IP_SERVEUR:3001/panel/` (login `POST /api/panel/login`, session `GET /api/panel/me`, voir `PANEL.txt`)
+- `GET /api/admin/users` (tag `admin` en BDD requis, relu à chaque appel) → liste joueurs
+
+## Tag admin (owner BDD uniquement, en SQL)
+`UPDATE users SET role = 'admin' WHERE username = 'Pseudo';`
+Le launcher affiche la section admin automatiquement, sans 2e login.
 
 ## Étape suivante (quand tu veux)
 - lancement jeu (authlib / minecraft-launcher-core)

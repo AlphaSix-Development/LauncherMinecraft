@@ -2,28 +2,31 @@ MCD - LAUNCHER MINECRAFT (BDD MySQL)
 ===================================
 Base : celle du .env (DB_NAME, ex : Launcher). Gerable via phpMyAdmin.
 
-ENTITES (aucune association : tables independantes)
----------------------------------------------------
-  JOUEUR  (table users)              ADMIN_PANEL  (table panel_users)
-  - id            : INT, PK, auto     - id            : INT, PK, auto
-  - username      : VARCHAR(16),      - username      : VARCHAR(32),
-                    UNIQUE                              UNIQUE
-  - email         : VARCHAR(255),    - password_hash : VARCHAR(255, bcrypt)
-                    UNIQUE            - created_at    : TIMESTAMP
-  - password_hash : VARCHAR(255, bcrypt)
+ENTITE UNIQUE (pas d'association)
+---------------------------------
+  JOUEUR  (table users)
+  - id            : INT, PK, auto
+  - username      : VARCHAR(16), UNIQUE
+  - email         : VARCHAR(255), UNIQUE
+  - password_hash : VARCHAR(255, bcrypt, jamais en clair)
+  - role          : ENUM('user','admin'), defaut 'user'  <- TAG ADMIN
   - created_at    : TIMESTAMP
 
 MLD (Modele Logique)
 --------------------
-  users (id#, username*, email*, password_hash, created_at)
-  panel_users (id#, username*, password_hash, created_at)
+  users (id#, username*, email*, password_hash, role, created_at)
   (# = cle primaire, * = UNIQUE ; pas de cle etrangere)
 
-QUI REMPLIT QUOI
-----------------
-  users        <- inscription/connexion depuis le launcher (API /api/auth/*)
-  panel_users  <- 1 seul compte, cree auto au boot depuis PANEL_ADMIN_USER /
-                   PANEL_ADMIN_PASSWORD du .env (aucune inscription publique)
+TAG ADMIN (seul le owner BDD le donne, en SQL direct)
+-----------------------------------------------------
+  Donner :  UPDATE users SET role = 'admin' WHERE username = 'TonPseudo';
+  Retirer : UPDATE users SET role = 'user'  WHERE username = 'TonPseudo';
+  Aucune route API n'accepte role en entree (ni register, ni login).
+  Effet : le launcher affiche la section admin auto (sans 2e login),
+  et /api/admin/* exige le tag relu en BDD a chaque appel.
+  Revoque = acces coupe en ~30s max, sans deconnexion a gerer.
 
-SCRIPT DE CREATION : server/schema-complet.sql (a jouer dans phpMyAdmin,
-onglet SQL). Detail colonnes + gestion manuelle : voir TABLES_BDD.txt.
+SCRIPT DE CREATION : server/schema-complet.sql (phpMyAdmin, onglet SQL).
+Detail colonnes + gestion manuelle : voir TABLES_BDD.txt.
+Ancien panel web supprime : table orpheline panel_users ignorée par l'API,
+effacable via : DROP TABLE IF EXISTS panel_users;

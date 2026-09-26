@@ -1,12 +1,11 @@
 require('dotenv').config();
 const express = require('express');
-const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { initDb } = require('./db');
 const authRoutes = require('./routes/auth');
-const panelRoutes = require('./routes/panel');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3001);
@@ -15,25 +14,13 @@ app.use(helmet());
 app.use(express.json({ limit: '64kb' }));
 app.use(cors({ origin: process.env.CORS_ORIGIN === '*' ? '*' : (process.env.CORS_ORIGIN || '*').split(',') }));
 
-// Anti-bruteforce sur l'auth jeu + panel
+// Anti-bruteforce sur l'auth jeu + admin
 app.use('/api/auth/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
-app.use('/api/panel/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
+app.use('/api/admin/', rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 
 app.get('/api/health', (req, res) => res.json({ ok: true, time: new Date().toISOString() }));
 app.use('/api/auth', authRoutes);
-app.use('/api/panel', panelRoutes);
-
-// no-store sur le HTML : le navigateur ne garde jamais une vieille page en cache
-// (les CSS/JS ont ?v= dans l'URL donc ils suivent automatiquement).
-function noStoreHtml(res, filePath) {
-  if (String(filePath).endsWith('.html')) res.setHeader('Cache-Control', 'no-store');
-}
-
-// Panel web admin (fichiers dans src/public/panel, embarqués dans l'image Docker)
-app.use('/panel', express.static(path.join(__dirname, 'public', 'panel'), { maxAge: 0, setHeaders: noStoreHtml }));
-
-// Page d'inscription TEMPORAIRE (à supprimer plus tard : effacer ce bloc + le dossier public/register).
-app.use('/register', express.static(path.join(__dirname, 'public', 'register'), { maxAge: 0, setHeaders: noStoreHtml }));
+app.use('/api/admin', adminRoutes);
 
 app.use((req, res) => res.status(404).json({ error: 'Route inconnue.' }));
 

@@ -49,3 +49,9 @@ button.danger { background: #2a2f3a; color: #fff; border: 1px solid #3a4150; }
 .userbox { background: #0c0f14; border: 1px solid #2a2f3a; border-radius: 10px; padding: 14px; margin: 16px 0; display: grid; gap: 8px; font-size: 14px; }
 .userbox span { color: #8b93a5; }
 .soon { background: #1a1407; border: 1px solid #6b5a1f; color: #f2c94c; padding: 12px; border-radius: 10px; font-size: 14px; }
+.card.wide { width: 640px; }
+.table-wrap { overflow-x: auto; margin: 6px 0 4px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #222836; }
+th { color: #8b93a5; font-size: 12px; text-transform: uppercase; }
+tbody tr:hover { background: rgba(255,255,255,.03); }

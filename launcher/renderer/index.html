@@ -40,6 +40,20 @@
         <p class="switch">Déjà inscrit ? <a href="#" id="go-login">Se connecter</a></p>
       </section>
 
+      <!-- ADMIN (visible auto si le compte jeu a le tag admin en BDD, sans 2e login) -->
+      <section id="view-admin" class="card wide hidden">
+        <div class="connected-badge">✅ Connecté — Admin</div>
+        <h1>Vous êtes bien connecté</h1>
+        <p class="sub">Bienvenue, <b id="admin-hello">admin</b> ! (<span id="admin-total">—</span> joueurs inscrits)</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Pseudo</th><th>Email</th><th>Inscrit le</th></tr></thead>
+            <tbody id="admin-users-body"><tr><td colspan="4">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+        <div id="admin-load-error" class="error"></div>
+      </section>
+
       <!-- CONNECTÉ -->
       <section id="view-connected" class="card hidden">
         <div class="connected-badge">✅ Connecté</div>
